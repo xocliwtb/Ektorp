@@ -33,7 +33,7 @@ public class QueryResultParser<T> {
     private static final String UPDATE_SEQUENCE_NAME = "update_seq";
 
     private int totalRows = -1;
-    private int offset = -1;
+    private long offset = -1;
     private List<T> rows;
     private Long updateSequence;
 
@@ -72,7 +72,7 @@ public class QueryResultParser<T> {
         while (jp.nextValue() != JsonToken.END_OBJECT) {
             String currentName = jp.getCurrentName();
             if (OFFSET_FIELD_NAME.equals(currentName)) {
-                offset = jp.getIntValue();
+                offset = jp.getLongValue();
             } else if (TOTAL_ROWS_FIELD_NAME.equals(currentName)) {
                 totalRows = jp.getIntValue();
             } else if (ROWS_FIELD_NAME.equals(currentName)) {
@@ -110,10 +110,10 @@ public class QueryResultParser<T> {
             }
             if (row.doc != null) {
                 dataField = INCLUDED_DOC_FIELD_NAME;
-                rows.add(mapper.readValue(row.doc.traverse(), type));
+                rows.add(mapper.readValue(row.doc.traverse(jp.getCodec()), type));
             } else {
                 dataField = VALUE_FIELD_NAME;
-                rows.add(mapper.readValue(row.value.traverse(), type));
+                rows.add(mapper.readValue(row.value.traverse(jp.getCodec()), type));
             }
             firstId = row.id;
             firstKey = row.key;
@@ -169,7 +169,7 @@ public class QueryResultParser<T> {
         return totalRows;
     }
 
-    public int getOffset() {
+    public long getOffset() {
         return offset;
     }
 
